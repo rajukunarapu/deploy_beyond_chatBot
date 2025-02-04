@@ -8,14 +8,21 @@ const cors = require('cors');
 const app = express();
 
 // CORS configuration (only allow FRONTEND_URL from environment variable)
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',  // This will use the URL from the environment variable or default to '*'
-  methods: ['GET', 'POST'],  // Allow only necessary methods
-  preflightContinue: false,
-  optionsSuccessStatus: 204,  // Some legacy browsers might require this status code
-};
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, "*"); // Allow requests with no origin (e.g., mobile apps)
+    const allowedOrigins = [process.env.FRONTEND_URL];
 
-app.use(cors(corsOptions));
+    if (allowedOrigins.includes(origin)) {
+      callback(null, origin);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 
 
